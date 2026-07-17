@@ -44,8 +44,9 @@ Do **not** set `VITE_SOCKET_URL` for the Vercel API.
 - `GET https://YOUR-BACKEND.vercel.app/ready`
 - Login from the frontend
 
-## Limits
+## Troubleshooting `FUNCTION_INVOCATION_FAILED`
 
-- No Socket.io (polling every ~8s on campaign detail)
-- Cold starts possible
-- Keep DB pool small
+1. Redeploy after pulling the latest `api/index.ts` + `bcryptjs` change.
+2. Open `/health` — if bootstrap failed, the JSON body now includes `BOOTSTRAP_FAILED` + message/stack.
+3. Confirm all env vars from the production list are set (especially `DATABASE_URL`, `JWT_ACCESS_SECRET`, `CORS_ORIGINS`, cookie `SameSite=none`).
+4. Prefer Supabase **transaction pooler** (`:6543`) for serverless if session pooler (`:5432`) is flaky.

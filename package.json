@@ -4,7 +4,7 @@
   "description": "Barakah Quran Khawani & Collective Ibadah Platform API",
   "type": "module",
   "engines": {
-    "node": "20.x"
+    "node": ">=20"
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
@@ -20,7 +20,7 @@
     "seed:users": "tsx scripts/seed-barakah-users.ts"
   },
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.3",
     "compression": "^1.7.5",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -39,7 +39,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
+    "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.7.5",
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",

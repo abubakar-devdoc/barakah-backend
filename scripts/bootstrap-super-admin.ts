@@ -12,7 +12,7 @@
  */
 import { config as loadDotenv } from 'dotenv';
 import pg from 'pg';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 loadDotenv();
 
