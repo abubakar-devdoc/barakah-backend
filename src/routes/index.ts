@@ -231,5 +231,27 @@ export function buildApiRouter(): Router {
   api.use('/users', usersRouter);
   api.use('/organizations', orgsRouter);
   api.use('/campaigns', campaignsRouter);
+
+  // Vercel Cron (and manual ops) — authorize with Bearer CRON_SECRET
+  api.all(
+    '/internal/cron/reconcile',
+    asyncHandler(async (req, res) => {
+      const { env } = await import('../config/env.js');
+      const { reconcile } = await import('../cron/reconcile.js');
+      const expected = env.CRON_SECRET;
+      const auth = req.headers.authorization || '';
+      const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+      if (!expected || token !== expected) {
+        res.status(401).json({
+          success: false,
+          error: { code: 'UNAUTHORIZED', message: 'Invalid cron secret' },
+        });
+        return;
+      }
+      await reconcile();
+      sendSuccess(res, { ok: true, ranAt: new Date().toISOString() });
+    }),
+  );
+
   return api;
 }

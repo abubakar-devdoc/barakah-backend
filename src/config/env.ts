@@ -48,6 +48,8 @@ const envSchema = z.object({
     .optional()
     .transform((v) => v !== 'false' && v !== '0'),
   CRON_RECONCILE_SCHEDULE: z.string().default('*/5 * * * *'),
+  /** Shared secret for Vercel Cron / manual reconcile HTTP trigger */
+  CRON_SECRET: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -63,12 +65,16 @@ export const env = {
   ...e,
   isProd: e.NODE_ENV === 'production',
   isTest: e.NODE_ENV === 'test',
+  isVercel: Boolean(process.env.VERCEL),
   corsOrigins: e.CORS_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean),
   swaggerEnabled: e.SWAGGER_ENABLED ?? e.NODE_ENV !== 'production',
-  cronEnabled: e.CRON_ENABLED ?? true,
+  // node-cron does not run on Vercel — use platform Cron hitting /internal/cron/reconcile
+  cronEnabled: process.env.VERCEL ? false : (e.CRON_ENABLED ?? true),
   databaseSsl: e.DATABASE_SSL ?? false,
   refreshCookieSecure: e.REFRESH_COOKIE_SECURE ?? e.NODE_ENV === 'production',
   logPretty: e.LOG_PRETTY ?? e.NODE_ENV !== 'production',
+  // Serverless: keep pool tiny
+  DATABASE_POOL_MAX: process.env.VERCEL ? Math.min(e.DATABASE_POOL_MAX, 3) : e.DATABASE_POOL_MAX,
 };
 
 export type Env = typeof env;
