@@ -1,9 +1,9 @@
 import express from 'express';
-import helmet from 'helmet';
+import helmetImport from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import rateLimit from 'express-rate-limit';
+import rateLimitImport from 'express-rate-limit';
 import { pinoHttp } from 'pino-http';
 import swaggerUi from 'swagger-ui-express';
 import type { Request } from 'express';
@@ -13,6 +13,16 @@ import { requestIdMiddleware } from './middleware/request-id.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { buildApiRouter, healthRouter } from './routes/index.js';
 import { openApiDocument } from './openapi/document.js';
+
+/** CJS/ESM interop for packages whose default export typing varies across TS/NodeNext. */
+const helmet =
+  typeof helmetImport === 'function'
+    ? helmetImport
+    : ((helmetImport as unknown as { default: typeof helmetImport }).default as typeof helmetImport);
+const rateLimit =
+  typeof rateLimitImport === 'function'
+    ? rateLimitImport
+    : ((rateLimitImport as unknown as { default: typeof rateLimitImport }).default as typeof rateLimitImport);
 
 export function createApp() {
   const app = express();
