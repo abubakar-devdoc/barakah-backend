@@ -1,12 +1,12 @@
 import express from 'express';
-import helmetImport from 'helmet';
+import * as HelmetModule from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import rateLimitImport from 'express-rate-limit';
+import * as RateLimitModule from 'express-rate-limit';
 import { pinoHttp } from 'pino-http';
 import swaggerUi from 'swagger-ui-express';
-import type { Request } from 'express';
+import type { Request, RequestHandler } from 'express';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { requestIdMiddleware } from './middleware/request-id.js';
@@ -14,15 +14,30 @@ import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { buildApiRouter, healthRouter } from './routes/index.js';
 import { openApiDocument } from './openapi/document.js';
 
-/** CJS/ESM interop for packages whose default export typing varies across TS/NodeNext. */
-const helmet =
-  typeof helmetImport === 'function'
-    ? helmetImport
-    : ((helmetImport as unknown as { default: typeof helmetImport }).default as typeof helmetImport);
-const rateLimit =
-  typeof rateLimitImport === 'function'
-    ? rateLimitImport
-    : ((rateLimitImport as unknown as { default: typeof rateLimitImport }).default as typeof rateLimitImport);
+type HelmetFactory = (options?: {
+  contentSecurityPolicy?: boolean | object;
+  crossOriginResourcePolicy?: { policy: string };
+}) => RequestHandler;
+
+type RateLimitFactory = (options: {
+  windowMs: number;
+  max: number;
+  standardHeaders?: boolean;
+  legacyHeaders?: boolean;
+  skipSuccessfulRequests?: boolean;
+  message?: unknown;
+}) => RequestHandler;
+
+/** NodeNext + CJS package typing is inconsistent on Vercel/TS 5.9 — force callable factories. */
+const helmet = (
+  (HelmetModule as unknown as { default?: HelmetFactory }).default ??
+  (HelmetModule as unknown as HelmetFactory)
+) as HelmetFactory;
+
+const rateLimit = (
+  (RateLimitModule as unknown as { default?: RateLimitFactory }).default ??
+  (RateLimitModule as unknown as RateLimitFactory)
+) as RateLimitFactory;
 
 export function createApp() {
   const app = express();
